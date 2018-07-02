@@ -1,0 +1,22 @@
+syntax="proto2";
+
+option java_outer_classname = "MessageProto";
+
+message MMSIFile{
+    optional string fileName = 1;
+    optional bytes mmsifile = 2;
+    optional string mmsi = 3;
+    optional int32 offset = 4;
+    optional int64 fileSize = 5;
+}
+
+
+message RequestMsg{
+    optional string mmsi = 1;
+    optional int32 fileNumber = 2;
+    optional string msg = 3;
+}
+
+message ResponseMsg{
+    optional string msg = 1;
+}
