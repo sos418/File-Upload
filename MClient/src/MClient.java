@@ -7,9 +7,25 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+
+import java.io.File;
 
 public class MClient {
+
+    static final boolean SSL = System.getProperty("ssl") != null;
+    static final String HOST = System.getProperty("host", "127.0.0.1");
+    static final int PORT = Integer.parseInt(System.getProperty("port", "8080"));
+
     public void connect(int port, String host) throws Exception {
+
+        File certChainFile = new File("./src/ssl/client.crt");
+        File keyFile = new File("./src/ssl/pkcs8_client.key");
+        File rootFile = new File("./src/ssl/ca.crt");
+        final SslContext sslCtx = SslContextBuilder.forClient().keyManager(certChainFile, keyFile).trustManager(rootFile).build();
+
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
@@ -18,6 +34,7 @@ public class MClient {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
 
+                    ch.pipeline().addLast(sslCtx.newHandler(ch.alloc()));
                     /*  Protobuf解碼器  */
                     ch.pipeline().addLast(new ProtobufVarint32FrameDecoder());
                     ch.pipeline().addLast(new ProtobufDecoder(MessageProto.ResponseMsg.getDefaultInstance()));
